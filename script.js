@@ -1,6 +1,22 @@
 var h = window.innerHeight;
 var w = window.innerWidth;
 
+var pieces = {
+    "p": "bpawn",
+    "r": "brook",
+    "n": "bknight",
+    "b": "bbishop",
+    "q": "bqueen",
+    "k": "bking",
+
+    "P": "wpawn",
+    "R": "wrook",
+    "N": "wknight",
+    "B": "wbishop",
+    "Q": "wqueen",
+    "K": "wking"
+};
+
 var table = document.getElementById("tabla");
 table.setAttribute("style", "width: "+(h*0.7)+"px"+";height: "+(h*0.7)+"px")
 
@@ -22,75 +38,109 @@ for (let i = 0; i < 8; i++) {
     }
 }
 
-// Alapfelállás
+function fenToBoard(fen) {
+    var board = [];
 
-for (let i = 0; i < 8; i++) {
-    
-    for (let l = 0; l < 8; l++) {
-        var pic = "";
-        if (i<2) {
-            var c = "b";
-        } else {
-            var c = "w";
-        }
+    var fenPosition = fen.split(" ")[0].split("/");
+    var nums = "123456789";
 
-        switch (i) { // rejtély
-            case 0:
-            case 7:
-                switch (l) {
-                    case 0:
-                    case 7:
-                        pic = c+"rook";
-                        break;
-                        
-                    case 1:
-                    case 6:
-                        pic = c+"knight";
-                        break;
-                        
-                    case 2:
-                    case 5:
-                        pic = c+"bishop";
-                        break;
-                        
-                    case 3:
-                        pic = c+"queen";
-                        break;
-                    
-                    case 4:
-                        pic = c+"king";
-                        break;
+
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            
+            if (nums.includes(fenPosition[i].charAt(j))) {
+                j += parseInt(fenPosition[i].charAt(j)) - 1;
+                continue;
             }
 
-            case 1:
-            case 6:
-                pic = c+"pawn";
-                break;
-        }
-        if (pic != "") {
-            var img = document.getElementById(`${l}-${i}`).insertBefore(document.createElement("img"), null);
-            img.setAttribute("src", `${pic}.png`);
-        }
+            board.push([j,i,fenPosition[i].charAt(j)]);
+        }   
+    }
+
+
+    return board;
+}
+
+function showBoard(board) {
+    
+    for (var pieceI = 0; pieceI < board.length; pieceI++) {
+        var piece = board[pieceI];
+        var pos = document.getElementById(piece[0] + "-" + piece[1]);
+        var p = pos.insertBefore(document.createElement("img"), null);
+        p.setAttribute("src", pieces[piece[2]] + ".png");
     }
 }
 
+var moving = false;
+var movingPiece = [];
+
 function clickTest(pos) {
-    /*console.log(pos)*/
 
-    var abc = "ABCDEFGH"
+    var abc = "ABCDEFGH";
+
+    var x = parseInt(pos.charAt(0));
+    var y = parseInt(pos.charAt(2));
+
     var xshow = abc.charAt(parseInt(pos.charAt(0)));
-    var x = parseInt(pos.charAt(0))+1;
-    var y = 9 - (parseInt(pos.charAt(2))+1);
+    var yshow = 8 - y;
 
-    console.log(xshow,y)
+    console.log(xshow,yshow);
 
-    showPlaces(x, y)
+    if (moving == false) {
+        moving = true;
+        movingPiece = [x,y];
+        checkPlaces(x, y, true);
+    } else {
+        movePiece(movingPiece, x, y)
+    }
+
 }
 
-function showPlaces(x, y) {
+function checkPlaces(x, y, draw) {
     // átlátszó zöldre állítja a lehetséges lépések helyét
     // egyenlőre még csak kontrol nélkül
     // switch statment-tel megállapítja a kattintás helyén lévő bábu létezését, típusát
-    // ehhez előbb készíts globális "board" nevű 2d-s array-t
-    // bábu >> bábu jele    semmi >> null 
+
+    var options = [];
+
+    for (var i=1;i<=8;i++) {
+        for (var j=1;j<=8;j++) {
+            options.push([j,i]);
+        }   
+    }
+
+    return options;
+}
+
+function movePiece(prevPos, x, y) {
+    x += 1;
+    y += 1;
+
+
+    opts = checkPlaces(prevPos[0], prevPos[1], false);
+    console.log(x, y, opts)
+    if (opts.includes([x, y])) {    // actual moving
+        var board = fenToBoard(fenR);
+        console.log("check1")   // valamiért nem engedi át az if statement  derítsd ki, mmiért nem!
+        for (position in board) {
+            if (position[0] == prevPos[0] && position[1] == prevPos[1]) {
+                console.log("check2")
+                var pos = document.getElementById(position[0] + "-" + position[1]);
+                var p = pos.insertBefore(document.createElement("img"), null);
+                p.setAttribute("src", pieces[position[2]] + ".png");
+
+                document.getElementById(x + "-" + y).getElementsByTagName("img").remove();
+
+                break;
+            }
+        }
+    }
+    
+    moving = false;
+    
+}
+
+function initChess() {
+    var fenR = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    showBoard(fenToBoard(fenR));
 }
