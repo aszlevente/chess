@@ -1,6 +1,8 @@
 var h = window.innerHeight;
 var w = window.innerWidth;
 
+var fenR = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
 var pieces = {
     "p": "bpawn",
     "r": "brook",
@@ -38,6 +40,17 @@ for (let i = 0; i < 8; i++) {
     }
 }
 
+function includesArr(container, arr) {
+    return container.find(
+        element =>
+            {
+                for (i = 0; i < element.length; i++) {
+                if (element[i] != arr[i]) return false;
+            }return true;
+        }
+    ) != undefined;
+}
+
 function fenToBoard(fen) {
     var board = [];
 
@@ -52,11 +65,10 @@ function fenToBoard(fen) {
                 j += parseInt(fenPosition[i].charAt(j)) - 1;
                 continue;
             }
-
             board.push([j,i,fenPosition[i].charAt(j)]);
+            
         }   
     }
-
 
     return board;
 }
@@ -73,7 +85,7 @@ function showBoard(board) {
 
 var moving = false;
 var movingPiece = [];
-
+/*
 function clickTest(pos) {
 
     var abc = "ABCDEFGH";
@@ -95,6 +107,7 @@ function clickTest(pos) {
     }
 
 }
+*/
 
 function checkPlaces(x, y, draw) {
     // átlátszó zöldre állítja a lehetséges lépések helyét
@@ -113,23 +126,24 @@ function checkPlaces(x, y, draw) {
 }
 
 function movePiece(prevPos, x, y) {
-    x += 1;
-    y += 1;
-
 
     opts = checkPlaces(prevPos[0], prevPos[1], false);
-    console.log(x, y, opts)
-    if (opts.includes([x, y])) {    // actual moving
+    if (includesArr(opts, [x, y])) {    // actual moving
+        console.log("option found");
         var board = fenToBoard(fenR);
-        console.log("check1")   // valamiért nem engedi át az if statement  derítsd ki, mmiért nem!
-        for (position in board) {
-            if (position[0] == prevPos[0] && position[1] == prevPos[1]) {
-                console.log("check2")
-                var pos = document.getElementById(position[0] + "-" + position[1]);
+        console.log("board defined");
+        console.log(board[0][0])
+        for (i = 0; i < board.length; i++) {
+            console.log(board[i]);
+            if (board[i][0] == prevPos[0] && board[i][1] == prevPos[1]) {
+                console.log("piece in board found")
+                var pos = document.getElementById(x + "-" + y);
                 var p = pos.insertBefore(document.createElement("img"), null);
-                p.setAttribute("src", pieces[position[2]] + ".png");
+                p.setAttribute("src", pieces[board[i][2]] + ".png");
 
-                document.getElementById(x + "-" + y).getElementsByTagName("img").remove();
+                var img = document.getElementById(board[i][0] + "-" + board[i][1]).getElementsByTagName("img");
+                img.parentNode.removeChild(img);
+                
 
                 break;
             }
@@ -141,6 +155,6 @@ function movePiece(prevPos, x, y) {
 }
 
 function initChess() {
-    var fenR = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    
     showBoard(fenToBoard(fenR));
 }
