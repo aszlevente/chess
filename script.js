@@ -51,6 +51,54 @@ function includesArr(container, arr) {
     ) != undefined;
 }
 
+function fenChanger(col, row, piece, act) { // col és row index alapú érték
+    var nums = "123456789";
+    var fenPosition = fenR.split(" ")[0].split("/");
+    var fenRow = fenPosition[row];
+    console.log(fenPosition)
+    var fullRow = [];
+    for (i = 0; i < fenRow.length; i++) {
+        if (i == col) {
+            if (act == 'make') {
+               fullRow.push(piece); 
+            } else {
+                fullRow.push('');
+            }
+        } else if (nums.includes(fenRow[i])) {
+            for (let n = 0; n < fenRow[i]; n++) {
+                fullRow.push('');
+            }
+        } else {
+            fullRow.push(fenRow[i]);
+        }
+    }
+
+    //vissza fen-né
+    var blankCounter = 0;
+    var finalFen = [];
+    for (i in fullRow) {
+        if (blankCounter > 0 && i != '') {
+            finalFen.push(blankCounter.toString()); // valami nagy gebasz van errefelé
+            blankCounter = 0;
+        }
+
+        if (i != '') {
+            finalFen.push(i);
+        } else {
+            blankCounter++;
+        }
+    }
+
+    fenPosition.splice(row, 0, finalFen);
+    fenPosition = fenPosition.join('/');
+
+    var fenRemainer = fenR.split(" ");
+    fenRemainer.splice(0, 1);
+    fenRemainer = fenRemainer.join(' ');
+    console.log(true, fenPosition);
+    fenR = fenPosition.concat(' ').concat(fenRemainer);
+}
+
 function fenToBoard(fen) {
     var board = [];
 
@@ -85,18 +133,18 @@ function showBoard(board) {
 
 var moving = false;
 var movingPiece = [];
-/*
-function clickTest(pos) {
 
-    var abc = "ABCDEFGH";
+function clickTest(pos) {
+    console.log('You clicked \n')
+    /*var abc = "ABCDEFGH";*/
 
     var x = parseInt(pos.charAt(0));
     var y = parseInt(pos.charAt(2));
-
+/*
     var xshow = abc.charAt(parseInt(pos.charAt(0)));
     var yshow = 8 - y;
 
-    console.log(xshow,yshow);
+    console.log(xshow,yshow);*/
 
     if (moving == false) {
         moving = true;
@@ -107,7 +155,7 @@ function clickTest(pos) {
     }
 
 }
-*/
+
 
 function checkPlaces(x, y, draw) {
     // átlátszó zöldre állítja a lehetséges lépések helyét
@@ -129,21 +177,18 @@ function movePiece(prevPos, x, y) {
 
     opts = checkPlaces(prevPos[0], prevPos[1], false);
     if (includesArr(opts, [x, y])) {    // actual moving
-        console.log("option found");
         var board = fenToBoard(fenR);
-        console.log("board defined");
-        console.log(board[0][0])
         for (i = 0; i < board.length; i++) {
-            console.log(board[i]);
             if (board[i][0] == prevPos[0] && board[i][1] == prevPos[1]) {
-                console.log("piece in board found")
                 var pos = document.getElementById(x + "-" + y);
                 var p = pos.insertBefore(document.createElement("img"), null);
                 p.setAttribute("src", pieces[board[i][2]] + ".png");
 
-                var img = document.getElementById(board[i][0] + "-" + board[i][1]).getElementsByTagName("img");
+                var img = document.getElementById(board[i][0] + "-" + board[i][1]).getElementsByTagName("img")[0];
                 img.parentNode.removeChild(img);
                 
+                fenChanger(prevPos[0], prevPos[1], board[i][2], 'del');
+                fenChanger(x, y, board[i][2], 'make');
 
                 break;
             }
